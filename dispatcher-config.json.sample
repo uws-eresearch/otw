@@ -1,0 +1,4 @@
+{
+"watchDirs" : ["/path/to/watch"],
+"pluginDirs" : ["./plugins"]
+}

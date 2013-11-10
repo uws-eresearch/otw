@@ -1,0 +1,8 @@
+[Core]
+Name = Pandoc Converter Plugin
+Module = PandocConverterPlugin
+
+[Documentation]
+Author = Peter Sefton
+Version = 0.1
+Description = Pandoc based plugin 

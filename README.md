@@ -22,8 +22,10 @@ Then the system will generate a set of web-ready files alongside it:
 
 ```
 test.md
-test.md_GENERATED_pandocmd/index.html
-                          /snippet.html #NOT implemented yet
+test.md_html/index.html
+            /snippet.html #NOT implemented yet
+            /eotx.txt #Not implemented yet will contain info about what 
+                       generated this file  
 ```
 
 ## Install
@@ -69,11 +71,3 @@ There will be more options for running this toolkit in future, but for now, run 
 
 
 
-
-
-=======
-aotw
-====
-
-All OF the Web - A framework for providing web previews and versions of all kinds of files
->>>>>>> a18fdebdf3676372fd13fdc44d1b21e0495a625f

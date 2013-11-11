@@ -7,7 +7,7 @@ import logging
 
 from categories import HTMLFormatter
 
-#logging.basicConfig(level=logging.DEBUG)
+#logging.basicCONFIG(level=logging.DEBUG)
 # The watch manager stores the watches and provides operations on watches
 
 
@@ -48,22 +48,28 @@ class FileAction:
 class FileActionStore:
     def __init__(self):
         self.actions = dict()
+
     def addAction(self,action):
         self.actions[action.ext] = action
-    def addActions(self,actionDicts):
+
+    def addActions(self, actionDicts):
         for act in actionDicts:
+	    print act
             for e in act["exts"]:
                 self.addAction(FileAction(e, act["method"], act["sig"], act["name"]))
+
     def extensionHasAction(self, ext):
         return ext in self.actions
+
     def getAction(self, ext):
         return self.actions[ext]
-    def actions(self):
+
+    def actions(self):	
         for a in actions:
             yield a
 
 
-class ActionableFile():
+class ActionableFile:
     def __init__(self, file):
         _,ext = os.path.splitext(file)
         #todo get rid of globals
@@ -73,65 +79,76 @@ class ActionableFile():
             dirname, self.filename = os.path.split(file)
             self.method = action.method
             self.actionable = True
-            self.dirname = os.path.join(dirname, "%s_GENERATED_%s"\
-                                % (self.filename,action.sig))
+            self.dirname = os.path.join(dirname,
+                                        self.filename + 
+                                        CONFIG["generatedDirSuffix"])
             self.indexHTML = os.path.join(self.dirname,"index.html")
         else:
             self.actionable = False
         
     def act(self):
-        if self.actionable and \
-           ((not os.path.exists(self.indexHTML)) or\
-             (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path))):
+        if (self.actionable and 
+           ((not os.path.exists(self.indexHTML)) or
+             (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path)))):
             self.method(self)
         else:
             pass
 
 class FileDispatcher:
-    #Get initial list of files
-    #TODO get rid of this and use the notify thing
-    def getInitialFileList(toWatch):
-        fileList = []
+    """ One-pass file walker to find all the files already in our watched 
+	We want to get this list ASAP after starting as any subsequent changes
+	should get picked up by the watcher directories"""
+
+    def __init__(self, toWatch):
+        self.fileList = []
         for watch in toWatch:
             for root, dirs, files in os.walk(watch):
                 for file in files:
                     actionable = ActionableFile(os.path.join(root,file))
                     if actionable.actionable:
-                        fileList.append(actionable)
-        return fileList
+			self.fileList.append(actionable)	
+       
 
 
     # Call processors for initial list
-    def acts(fileList):
-        for file in fileList:
-            file.act()
+    def acts(self):
+        for file in self.fileList:
+            print "Acting"
+	    #Check if we still need to run as things might have changed
+	    if file.actionable: file.act()
 
 
 # Now watch and call processors for each file
 
 #TODO - can I get rid of this global?
 ACTIONS = FileActionStore()
+CONFIG = json.load(open("dispatcher-config.json"))
+
 
 def main():   
-    config = json.load(open("dispatcher-config.json"))
+    
     # Load the plugins from the plugin directory.
     manager = PluginManager(categories_filter={ "Formatters": HTMLFormatter})
-    manager.setPluginPlaces(config["pluginDirs"])
+    manager.setPluginPlaces(CONFIG["pluginDirs"])
    
     manager.collectPlugins()
     
-    # Loop round the plugins and print their names.
+    # Loop round the loaded plugins and print their names.
     for plugin in manager.getAllPlugins():
+	print "Loaded plugin: ",
         plugin.plugin_object.print_name()
         ACTIONS.addActions(plugin.plugin_object.actions)
           
     #Start watching
     
-    WatcherDispatcher(config["watchDirs"])
+    WatcherDispatcher(CONFIG["watchDirs"])
 
     #Get a list of existing files
-    #initialFileList = FileDispatcher.getInitialFileList(watchDirs)
-    #FileDispatcher.acts(initialFileList)
+    
+    FileDispatcher(CONFIG["watchDirs"]).acts()
+  
+
+
 if __name__ == "__main__":
     main()
 

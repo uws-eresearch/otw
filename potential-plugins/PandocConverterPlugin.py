@@ -4,7 +4,14 @@ import subprocess
 import os
 
 class PandocConverterPlugin(HTMLFormatter):
+    """ Pandoc based document converter.
+    Initial release handles markdown only.
+
+    """
+
     def __init__(self):
+        """ Create a new formatter for the dispatcher to use. """ 
+
         self.actions = [{"exts"   :[".md"],\
                          "method" : self.convert,\
                           "sig"   : "pandocmd",\
@@ -12,8 +19,12 @@ class PandocConverterPlugin(HTMLFormatter):
         
 
     def convert(self, actableFile):
+        """Simple conversion script that runs markdown thru pandoc.
+        actableFile: ActionalableFile object from dispatcher.py
+        TODO: Fix relative image paths
+
+        """
         try:
-            print "Trying to make" + actableFile.dirname
             os.mkdir(actableFile.dirname)
         except:
             pass

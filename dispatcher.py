@@ -1,4 +1,5 @@
-import os
+#!/usr/bin/env python
+import os, sys
 import categories
 import pyinotify
 import json
@@ -7,9 +8,7 @@ import logging
 
 from categories import HTMLFormatter
 
-#logging.basicCONFIG(level=logging.DEBUG)
-# The watch manager stores the watches and provides operations on watches
-
+logging.basicConfig(level=logging.DEBUG)
 
 
 class EventHandler(pyinotify.ProcessEvent):
@@ -95,7 +94,7 @@ class ActionableFile:
             pass
 
 class FileDispatcher:
-    """ One-pass file walker to find all the files already in our watched 
+    """ One-pass file walker to find all the files already in our watched dirs 
 	We want to get this list ASAP after starting as any subsequent changes
 	should get picked up by the watcher directories"""
 
@@ -113,9 +112,8 @@ class FileDispatcher:
     # Call processors for initial list
     def acts(self):
         for file in self.fileList:
-            print "Acting"
-	    #Check if we still need to run as things might have changed
-	    if file.actionable: file.act()
+	        #Check if we still need to run as things might have changed
+	         if file.actionable: file.act()
 
 
 # Now watch and call processors for each file
@@ -130,7 +128,8 @@ def main():
     # Load the plugins from the plugin directory.
     manager = PluginManager(categories_filter={ "Formatters": HTMLFormatter})
     manager.setPluginPlaces(CONFIG["pluginDirs"])
-   
+    for dir in CONFIG["pluginDirs"]:
+        sys.path.append(dir)
     manager.collectPlugins()
     
     # Loop round the loaded plugins and print their names.

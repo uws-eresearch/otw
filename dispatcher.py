@@ -53,9 +53,10 @@ class FileActionStore:
 
     def addActions(self, actionDicts):
         for act in actionDicts:
-	    print act
-            for e in act["exts"]:
-                self.addAction(FileAction(e, act["method"], act["sig"], act["name"]))
+            for e in act["exts"]:   
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+                self.addAction(FileAction(e, act["method"], 
+                                          act["sig"], act["name"]))
 
     def extensionHasAction(self, ext):
         return ext in self.actions
@@ -89,7 +90,10 @@ class ActionableFile:
         if (self.actionable and 
            ((not os.path.exists(self.indexHTML)) or
              (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path)))):
-            self.method(self)
+            try:
+                self.method(self)
+            except:
+                print "ERROR"
         else:
             pass
 
@@ -124,6 +128,8 @@ CONFIG = json.load(open("dispatcher-config.json"))
 
 
 def main():   
+    scanRepeatedly = CONFIG["scanRepeatedly"]
+    useInotify = CONFIG["useInotify"]
     
     # Load the plugins from the plugin directory.
     manager = PluginManager(categories_filter={ "Formatters": HTMLFormatter})
@@ -137,14 +143,19 @@ def main():
 	print "Loaded plugin: ",
         plugin.plugin_object.print_name()
         ACTIONS.addActions(plugin.plugin_object.actions)
+     
           
     #Start watching
+    if scanRepeatedly and useInotify:
+        scanRepeatedly = False #Don't loop below we're watching events
+        WatcherDispatcher(CONFIG["watchDirs"])
     
-    WatcherDispatcher(CONFIG["watchDirs"])
-
     #Get a list of existing files
-    
-    FileDispatcher(CONFIG["watchDirs"]).acts()
+    needToScanFiles = True
+    while needToScanFiles:
+        FileDispatcher(CONFIG["watchDirs"]).acts()
+        needToScanFiles = scanRepeatedly
+       
   
 
 

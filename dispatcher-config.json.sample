@@ -1,4 +1,7 @@
 {
 "watchDirs" : ["/path/to/watch"],
 "pluginDirs" : ["./plugins"]
+"scanRepeatedly" : true,
+"useInotify" : false,
+"generatedDirSuffix" : "_html"
 }

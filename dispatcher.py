@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+Part of the OF The Web (otw) framework.
+
+Scans one or more directories and creates web-ready versions of content therein
+
+
+
+"""
 import os, sys
 import categories
 import pyinotify
@@ -76,10 +84,10 @@ class ActionableFile:
         if ACTIONS.extensionHasAction(ext):
             action = ACTIONS.getAction(ext)
             self.path = file
-            dirname, self.filename = os.path.split(file)
+            self.originalDirname, self.filename = os.path.split(file)
             self.method = action.method
             self.actionable = True
-            self.dirname = os.path.join(dirname,
+            self.dirname = os.path.join(self.originalDirname,
                                         self.filename + 
                                         CONFIG["generatedDirSuffix"])
             self.indexHTML = os.path.join(self.dirname,"index.html")

@@ -1,4 +1,4 @@
-# Everything OF the web (eotw)
+#  OF the web (otw)
 
 This project aims to bring together an extensible set of tools for creating web-ready views of all kinds of files. The idea is that everything should not only have the opportunity to be ON the web but should also be able to be OF the web - that is, available in HTML, or wrapped in HTML, with as much rich machine readable metadata as possible.
 
@@ -37,11 +37,11 @@ These instructions are for Ubuntu and at this stage we are assuming you know you
 
     ```cd /opt/```
 
-	```sudo mkdir eotw```
+	```sudo mkdir otw```
 
 	```sudo chown $USER:$USER eotw```
 
-    ```git clone https://github.com/uws-eresearch/eotw.git```
+    ```git clone https://github.com/uws-eresearch/otw.git```
 
 * Install the dependencies TODO: Check
 
@@ -61,13 +61,13 @@ These instructions are for Ubuntu and at this stage we are assuming you know you
 
 ## Add plugins
 
-A pluging for Everything OF The Web consists of (at least) two files, a plugin info file with the extension ```.epsy-plugin``` and a python file (```.py```).
+A pluging for _OF The Web_ consists of (at least) two files, a plugin info file with the extension ```.epsy-plugin``` and a python file (```.py```).
 
 Out of the box, the system will look in the ```plugins/``` directory for conversion plugins that format files into HTML.
 
 A simple way to get started is to copy the whole directory:
 
-    ```cp -r /opt/eotw/potential-plugins /opt/eotw/plugins```
+    ```cp -r /opt/otw/potential-plugins /opt/otw/plugins```
 
 
 # Run

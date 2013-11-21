@@ -2,6 +2,7 @@
 from categories import HTMLFormatter
 import subprocess
 import os
+import json
 
 class PandocConverterPlugin(HTMLFormatter):
     """ Pandoc based document converter.
@@ -16,6 +17,12 @@ class PandocConverterPlugin(HTMLFormatter):
                          "method" : self.convert,\
                           "sig"   : "pandocmd",\
                           "name"  : "Pandoc based markdown converter"}]
+        self.config = json.load(open("dispatcher-config.json"))
+        if "preferDataURIs" in self.config:
+            self.preferDataURIs = self.config["preferDataURIs"]
+        else:
+            self.preferDataURIs = False
+
         
 
     def convert(self, actableFile):
@@ -24,13 +31,23 @@ class PandocConverterPlugin(HTMLFormatter):
         TODO: Fix relative image paths
 
         """
+            
         try:
             os.mkdir(actableFile.dirname)
         except:
             pass
-        subprocess.call(["pandoc", "-o",\
-                           actableFile.indexHTML,\
-                           actableFile.path])
+            
+        os.chdir(actableFile.originalDirname)
+        if self.preferDataURIs:
+             try:
+                print subprocess.check_output(["pandoc", "--self-contained", "-o",
+                           actableFile.indexHTML, actableFile.path])
+                return
+             except:
+                pass
+        subprocess.check_output(["pandoc", "-o",
+                           actableFile.indexHTML, actableFile.path])
+    
         print "Ran pandoc on " + actableFile.path
         
     def print_name(self):

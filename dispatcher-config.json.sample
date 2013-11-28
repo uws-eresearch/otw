@@ -3,5 +3,6 @@
 "pluginDirs" : ["./plugins"]
 "scanRepeatedly" : true,
 "useInotify" : false,
-"generatedDirSuffix" : "_html"
+"generatedDirName" : "_html",
+"preferDataURIs" : false
 }

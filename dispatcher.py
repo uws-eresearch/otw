@@ -87,10 +87,12 @@ class ActionableFile:
             self.originalDirname, self.filename = os.path.split(file)
             self.method = action.method
             self.actionable = True
+            self.indexFilename = "index.html"
             self.dirname = os.path.join(self.originalDirname,
-                                        self.filename + 
-                                        CONFIG["generatedDirSuffix"])
-            self.indexHTML = os.path.join(self.dirname,"index.html")
+					CONFIG["generatedDirName"],
+                                        self.filename)
+            
+            self.indexHTML = os.path.join(self.dirname,self.indexFilename)
         else:
             self.actionable = False
         

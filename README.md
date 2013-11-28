@@ -22,7 +22,7 @@ Then the system will generate a set of web-ready files alongside it:
 
 ```
 test.md
-test.md_html/index.html
+/_html/test.md/index.html
             /snippet.html #NOT implemented yet
             /eotx.txt #Not implemented yet will contain info about what 
                        generated this file  
@@ -45,7 +45,7 @@ These instructions are for Ubuntu and at this stage we are assuming you know you
 
 * Install the dependencies TODO: Check
 
-    ```sudo easy_install pyinotify```
+    ```sudo easy_install yapsy pyinotify ```
 
 * For each of the plugins you're going to use, install _their_ dependecies. For the example pandoc markdown converter
 
@@ -58,6 +58,7 @@ These instructions are for Ubuntu and at this stage we are assuming you know you
     ```cp dispatcher-config.json.sample dispatcher-config.json```
 
 * Edit the sample congfig file to tell the dispatcher which directories to watch. That is, change the entry for Watchdirs to an array of one or more paths to watch.
+  * ```"PreferDataURIs" : true``` will try to save images as data URIs rather than separate files 
 
 ## Add plugins
 
@@ -68,7 +69,11 @@ Out of the box, the system will look in the ```plugins/``` directory for convers
 A simple way to get started is to copy the whole directory:
 
     ```cp -r /opt/otw/potential-plugins /opt/otw/plugins```
+    
+There is an office document converter that run on word processing documents in this project: https://code.google.com/p/jischtml5/
 
+Assuming you [install it](https://code.google.com/p/jischtml5/wiki/WordDownCommandlineOpenOffice), add it to your plugins like so:
+  * Add this to your array of pluginPaths array ```"/opt/jischtml5/tools/commandline"```
 
 # Run
 

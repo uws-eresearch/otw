@@ -16,7 +16,7 @@ import logging
 
 from categories import HTMLFormatter
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename='dispatcher.log', level=logging.DEBUG)
 
 
 class EventHandler(pyinotify.ProcessEvent):
@@ -27,7 +27,7 @@ class EventHandler(pyinotify.ProcessEvent):
         ActionableFile(event.pathname).act()
     
     def process_IN_DELETE(self, event):
-        print "Removing:", event.pathname
+        pass #TODO Deal with removing files
 
 class WatcherDispatcher:
     def __init__(self, watchDirs):
@@ -35,9 +35,11 @@ class WatcherDispatcher:
         self.wm = pyinotify.WatchManager()
         self.notifier = pyinotify.ThreadedNotifier(self.wm, EventHandler())
         self.notifier.start()
-        print "Started watching"
+        logging.info("Starting watching")
         for watch in watchDirs:
             self.wm.add_watch(watch, self.mask, rec=True)
+            logging.info("watch")
+        logging.info("---------")
 
     #def start(self):
      #   watcher(wm)
@@ -103,7 +105,9 @@ class ActionableFile:
             try:
                 self.method(self)
             except:
-                print "ERROR"
+                logging.warning("WARNING:")
+                logging.warning(sys.exc_info()[0])
+                logging.warning("-------------")
         else:
             pass
 

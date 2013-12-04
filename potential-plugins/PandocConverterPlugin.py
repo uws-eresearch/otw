@@ -2,7 +2,9 @@
 from categories import HTMLFormatter
 import subprocess
 import os
-import json
+import logging
+import json 
+
 
 class PandocConverterPlugin(HTMLFormatter):
     """ Pandoc based document converter.
@@ -22,6 +24,7 @@ class PandocConverterPlugin(HTMLFormatter):
             self.preferDataURIs = self.config["preferDataURIs"]
         else:
             self.preferDataURIs = False
+        
 
         
 
@@ -33,14 +36,14 @@ class PandocConverterPlugin(HTMLFormatter):
         """
             
         try:
-            os.mkdir(actableFile.dirname)
+            os.makedirs(actableFile.dirname)
         except:
             pass
             
         os.chdir(actableFile.originalDirname)
         if self.preferDataURIs:
              try:
-                print subprocess.check_output(["pandoc", "--self-contained", "-o",
+                subprocess.check_output(["pandoc", "--self-contained", "-o",
                            actableFile.indexHTML, actableFile.path])
                 return
              except:
@@ -48,7 +51,7 @@ class PandocConverterPlugin(HTMLFormatter):
         subprocess.check_output(["pandoc", "-o",
                            actableFile.indexHTML, actableFile.path])
     
-        print "Ran pandoc on " + actableFile.path
+        logging.info("Ran pandoc on " + actableFile.path)
         
     def print_name(self):
         print "Pandoc Converter Plugin"

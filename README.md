@@ -68,7 +68,7 @@ Out of the box, the system will look in the ```plugins/``` directory for convers
 
 A simple way to get started is to copy the whole directory:
 
-    ```cp -r /opt/otw/potential-plugins /opt/otw/plugins```
+ * ```cp -r /opt/otw/potential-plugins /opt/otw/plugins```
     
 There is an office document converter that run on word processing documents in this project: https://code.google.com/p/jischtml5/
 
@@ -85,11 +85,11 @@ There will be more options for running this toolkit in future, but for now, run 
  
 ## As a service 
 
-TODO: Andrew!!!
+The script ```dispatcher.rc``` should be added to the appropriate run scripts folder on your system.  This script requires ```realpath``` to be installed. You are welcome to rename this script to something more sensible for your Linux host.
 
+dispatcher.rc accepts the normal start/stop/restart/status arguments.
 
-
-
+A PID file (```dispatcher.pid```) is created in the /opt/otw/ install folder on start. If you would prefer this in another place, like /var/run/ edit dispatcher.rc
 
 
 

@@ -80,7 +80,7 @@ fi
 stop() {
 if [[ -z "${PID}" ]]; then
 echo "${PROGSHORT} is not running (missing PID)."
-elif [[ -e /proc/${PID}/exe && "`realpath /proc/${PID}/exe`" == "`realpath ${PROGLONG}`" ]]; then
+elif [[ -e /proc/${PID}/exe && "`proc2cmd ${PID}`" == "`realpath ${PROGLONG}`" ]]; then
 kill $1 ${PID}
 else
 echo "${PROGSHORT} is not running (tested PID: ${PID})."

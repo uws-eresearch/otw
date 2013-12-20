@@ -1,0 +1,132 @@
+#!/bin/bash
+# Uses a PID file to add daemon-like behavior to an arbitrary program.
+################################################################################
+ 
+#cd /opt/otw/ ## arggh
+
+PROGLONG="python /opt/otw/dispatcher.py /opt/otw/dispatcher-config.json"
+PROGSHORT="dispatcher.py"
+PIDFILE="/opt/otw/dispatcher.pid"
+
+usage() {
+echo "Usage: `basename $0` {start|stop|restart|force-stop|force-restart|status} [PIDFILE|PID]" >&2
+}
+ 
+proc2cmd() {
+    declare PID=$1
+    declare CMDLINE=$(echo $(cat /proc/$PID/cmdline | while read -r -d $'\0' LINE; do echo $LINE; done | tail -1))
+    realpath "${CMDLINE}"
+}
+
+# At least one argument is required.
+if [[ -z "${1}" ]]; then
+echo "args"
+usage
+exit 1
+fi
+
+# At least two arguments are required.
+# if [[ -z "${1}" || -z "${2}" ]]; then
+# usage
+# exit 1
+#fi
+ 
+# The first argument must be an actual file.
+# if [[ ! -e "${1}" ]]; then
+# echo "File \"${1}\" not found. Exiting." 1>&2;
+# exit 2
+# fi
+ 
+# PROGLONG=$(realpath $1)
+# PROGSHORT=$(basename ${PROGLONG})
+# PIDFILE=${PIDFILE:-"${PROGSHORT}.pid"}
+ 
+echo PROGLONG=$PROGLONG
+echo PROGSHORT=$PROGSHORT
+echo PIDFILE=$PIDFILE
+
+# If there is a third argument, try to interpret it as a file or PID value.
+if [[ ${3} ]]; then
+if [[ `expr $3 + 1 2> /dev/null` ]]; then
+PID=$3;
+elif [[ -e ${3} || "${2}" == "start" ]]; then
+PIDFILE="${3}"
+else
+echo "Third argument must be a number or a file. (Found $3). Exiting." 1>&2;
+exit 3
+fi
+fi
+ 
+# Get the PID from PIDFILE if we don't have one yet.
+if [[ -z "${PID}" && -e ${PIDFILE} ]]; then
+PID=$(cat ${PIDFILE});
+fi
+ 
+start() {
+echo "Starting $PROGSHORT (PID written to $PIDFILE)."
+${PROGLONG} & echo $! > ${PIDFILE}
+}
+ 
+status() {
+if [[ -z "${PID}" ]]; then
+echo "${PROGSHORT} is not running (missing PID)."
+elif [[ -e /proc/${PID}/exe && "`proc2cmd ${PID}`" == "`realpath ${PROGLONG}`" ]]; then
+echo "${PROGSHORT} is running (PID: ${PID})."
+else
+echo "${PROGSHORT} is not running (tested PID: ${PID})."
+fi
+}
+ 
+stop() {
+if [[ -z "${PID}" ]]; then
+echo "${PROGSHORT} is not running (missing PID)."
+elif [[ -e /proc/${PID}/exe && "`realpath /proc/${PID}/exe`" == "`realpath ${PROGLONG}`" ]]; then
+kill $1 ${PID}
+else
+echo "${PROGSHORT} is not running (tested PID: ${PID})."
+fi
+}
+ 
+case "$1" in
+start)
+start;
+;;
+restart)
+stop; sleep 1; start;
+;;
+stop)
+stop
+;;
+force-stop)
+stop -9
+;;
+force-restart)
+stop -9; sleep 1; start;
+;;
+status)
+status
+;;
+*)
+echo "no match"
+usage
+exit 4
+;;
+esac
+ 
+exit 0
+ 
+######################################################################
+# This program is free software. It comes without any warranty, to
+# the extent permitted by applicable law.
+#
+# If your jurisdiction supports the concept of Public Domain works,
+# this program is released into the Public Domain.
+#
+# Otherwise this program is available under the following terms:
+#---------------------------------------------------------------------
+# Copyright (c) 2012, Rodney Waldhoff
+#
+# Everyone is permitted to copy and distribute verbatim or modified
+# copies of this program with or without this notice.
+######################################################################
+

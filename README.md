@@ -85,9 +85,11 @@ There will be more options for running this toolkit in future, but for now, run 
  
 ## As a service 
 
-The script ```dispatcher.rc``` can be added to the appropriate run scripts folder on your system.  This script requires ```realpath``` to be installed. You are welcome to rename this script to something the makes sense for your Linux host.
+The script ```dispatcher.rc``` can be added to the appropriate run scripts folder on your system.
 
-'''dispatcher.rc''' accepts the normal start/stop/restart/status arguments.
+```dispatcher.rc``` accepts the normal start/stop/restart/status arguments.
+
+This script requires ```realpath``` to be installed. You are welcome to rename this script to something the makes sense for your Linux host.
 
 A PID file is recorded into ```/opt/otw/dispatcher.pid```. If you would prefer this in another place, such as /var/run/, you will need to edit ```dispatcher.rc```
 

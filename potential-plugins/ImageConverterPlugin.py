@@ -35,6 +35,8 @@ class ImageConverterPlugin(HTMLFormatter):
         """Simple conversion script that runs markdown thru pandoc.
         actableFile: ActionalableFile object from dispatcher.py
         TODO: Fix relative image paths
+        TODO: Include RDFa info
+        TODO: Use json output from exiftool 
 
         """
             

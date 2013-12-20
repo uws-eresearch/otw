@@ -2,7 +2,7 @@
 
 This project aims to bring together an extensible set of tools for creating web-ready views of all kinds of files. The idea is that everything should not only have the opportunity to be ON the web but should also be able to be OF the web - that is, available in HTML, or wrapped in HTML, with as much rich machine readable metadata as possible.
 
-This is for Linux based systems only as it relies on the inotify file event notification service.
+If you are running on Linux then you can use the inotify system to watch for file system changes, if not this just repeatedly scans a set of paths, with no waiting or other niceties.
 
 
 It contains:
@@ -75,11 +75,19 @@ There is an office document converter that run on word processing documents in t
 Assuming you [install it](https://code.google.com/p/jischtml5/wiki/WordDownCommandlineOpenOffice), add it to your plugins like so:
   * Add this to your array of pluginPaths array ```"/opt/jischtml5/tools/commandline"```
 
-# Run
+# Run 
+
+## From Python
 
 There will be more options for running this toolkit in future, but for now, run it like so:
 
- *  ```python dispatcher.py```
+ *  ```python dispatcher.py dispatcher-config.json```
+ 
+## As a service 
+
+TODO: Andrew!!!
+
+
 
 
 

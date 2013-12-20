@@ -9,7 +9,7 @@ Start this using a shell script for the appropriate operating system
 """
 import os, sys
 import categories
-import pyinotify #TODO try/except for other OSs
+
 import json
 from yapsy.PluginManager import PluginManager
 import logging
@@ -17,20 +17,6 @@ import json
 
 from categories import HTMLFormatter
 
-
-
-
-class EventHandler(pyinotify.ProcessEvent):
-    def process_IN_CREATE(self, event):
-        if os.path.isfile(event.pathname):
-            ActionableFile(event.pathname).act()
-
-    def process_IN_CLOSE(self, event):
-        if os.path.isfile(event.pathname):
-            ActionableFile(event.pathname).act()
-    
-    def process_IN_DELETE(self, event):
-        pass #TODO Deal with removing files
 
 class WatcherDispatcher:
     def __init__(self, watchDirs):
@@ -124,15 +110,15 @@ class ActionableFile:
         json.dump(self.meta,j)
             
     def act(self):
-        if (self.actionable and 
-           ((not os.path.exists(self.indexHTML)) or
-             (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path)))):
-            try:
-                self.method(self)
-            except Exception, e:
-               self.complain(e)
-        else:
-            pass
+        try:
+            if (self.actionable and 
+               ((not os.path.exists(self.indexHTML)) or
+                 (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path)))):
+                
+                    self.method(self)
+        except Exception, e:
+            self.complain(e)
+        
 
 class FileDispatcher:
     """ One-pass file walker to find all the files already in our watched dirs 
@@ -174,10 +160,19 @@ logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 logging.warning("OTW Dispatcher started ")
 
+useInotify = CONFIG["useInotify"]
+if useInotify:
+    try:
+        import pyinotify
+        from eventhandler import EventHandler
+    except:
+        logging.warn("Unable to import pyinotify")
+        useInotify = False
 
-def main():   
+def main(useInotify):   
     scanRepeatedly = CONFIG["scanRepeatedly"]
-    useInotify = CONFIG["useInotify"]
+    
+   
     
     # Load the plugins from the plugin directory.
     manager = PluginManager(categories_filter={ "Formatters": HTMLFormatter})
@@ -207,5 +202,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(useInotify)
 

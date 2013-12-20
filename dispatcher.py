@@ -1,30 +1,33 @@
 #!/usr/bin/env python
 """
-Part of the OF The Web (otw) framework.
+Part of the Of The Web (otw) framework.
 
 Scans one or more directories and creates web-ready versions of content therein
 
-
+Start this using a shell script for the appropriate operating system
 
 """
 import os, sys
 import categories
-import pyinotify
+import pyinotify #TODO try/except for other OSs
 import json
 from yapsy.PluginManager import PluginManager
 import logging
+import json
 
 from categories import HTMLFormatter
 
-logging.basicConfig(filename='dispatcher.log', level=logging.DEBUG)
+
 
 
 class EventHandler(pyinotify.ProcessEvent):
     def process_IN_CREATE(self, event):
-        ActionableFile(event.pathname).act()
+        if os.path.isfile(event.pathname):
+            ActionableFile(event.pathname).act()
 
     def process_IN_CLOSE(self, event):
-        ActionableFile(event.pathname).act()
+        if os.path.isfile(event.pathname):
+            ActionableFile(event.pathname).act()
     
     def process_IN_DELETE(self, event):
         pass #TODO Deal with removing files
@@ -81,33 +84,53 @@ class FileActionStore:
 
 class ActionableFile:
     def __init__(self, file):
-        _,ext = os.path.splitext(file)
+        _,self.ext = os.path.splitext(file)
+        self.ext = self.ext.lower()
         #todo get rid of globals
-        if ACTIONS.extensionHasAction(ext):
-            action = ACTIONS.getAction(ext)
-            self.path = file
-            self.originalDirname, self.filename = os.path.split(file)
-            self.method = action.method
-            self.actionable = True
-            self.indexFilename = "index.html"
-            self.dirname = os.path.join(self.originalDirname,
-					CONFIG["generatedDirName"],
-                                        self.filename)
-            
-            self.indexHTML = os.path.join(self.dirname,self.indexFilename)
-        else:
-            self.actionable = False
         
+        #TODO: make this 'proper' JSON-LD by adding @context
+        #For now jsut use simple metadata which is 'JSON-LD ready'
+        self.meta = {"dc:title":"Untitled","dc:creator":{"@list": []}}
+        #TODO make meta private and add methods to change it
+        try:
+            if ACTIONS.extensionHasAction(self.ext):
+                action = ACTIONS.getAction(self.ext)
+                self.path = file
+                self.originalDirname, self.filename = os.path.split(file)
+                self.method = action.method
+                self.actionable = True
+                self.indexFilename = "index.html"
+                self.metaFilename = "meta.json"
+                self.dirname = os.path.join(self.originalDirname,
+					    CONFIG["generatedDirName"],
+                                            self.filename)
+                
+                self.indexHTML = os.path.join(self.dirname,self.indexFilename)
+                self.metaJSON = os.path.join(self.dirname,self.metaFilename)
+            else:
+                self.actionable = False
+        except Exception, e:
+            self.complain(e)
+            
+    def complain(self, e):
+        logging.warning("WARNING:" + self.path)
+        logging.warning(sys.exc_info()[0])
+        logging.warning(e.__doc__)
+        logging.warning(e.message)
+        logging.warning("-------------")
+            
+    def saveMeta(self):
+        j = open(self.metaJSON, "w")
+        json.dump(self.meta,j)
+            
     def act(self):
         if (self.actionable and 
            ((not os.path.exists(self.indexHTML)) or
              (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path)))):
             try:
                 self.method(self)
-            except:
-                logging.warning("WARNING:")
-                logging.warning(sys.exc_info()[0])
-                logging.warning("-------------")
+            except Exception, e:
+               self.complain(e)
         else:
             pass
 
@@ -123,7 +146,8 @@ class FileDispatcher:
                 for file in files:
                     actionable = ActionableFile(os.path.join(root,file))
                     if actionable.actionable:
-			self.fileList.append(actionable)	
+                        
+                        self.fileList.append(actionable)	
        
 
 
@@ -138,7 +162,17 @@ class FileDispatcher:
 
 #TODO - can I get rid of this global?
 ACTIONS = FileActionStore()
-CONFIG = json.load(open("dispatcher-config.json"))
+#TODO fail gracefully with usage
+configFilePath = sys.argv[1]
+CONFIG = json.load(open(configFilePath))
+
+logger = logging.getLogger('dispatcher')
+hdlr = logging.FileHandler(CONFIG["logFile"])
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr) 
+logger.setLevel(logging.DEBUG)
+logging.warning("OTW Dispatcher started ")
 
 
 def main():   
@@ -154,14 +188,13 @@ def main():
     
     # Loop round the loaded plugins and print their names.
     for plugin in manager.getAllPlugins():
-	print "Loaded plugin: ",
-        plugin.plugin_object.print_name()
+        logger.info("Loaded plugin: " + str(plugin.plugin_object.actions))
         ACTIONS.addActions(plugin.plugin_object.actions)
      
           
     #Start watching
     if scanRepeatedly and useInotify:
-        scanRepeatedly = False #Don't loop below we're watching events
+        scanRepeatedly = False #Don't loop below we're already watching events
         WatcherDispatcher(CONFIG["watchDirs"])
     
     #Get a list of existing files

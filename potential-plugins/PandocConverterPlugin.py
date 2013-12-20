@@ -5,7 +5,6 @@ import os
 import logging
 import json 
 
-
 class PandocConverterPlugin(HTMLFormatter):
     """ Pandoc based document converter.
     Initial release handles markdown only.
@@ -14,12 +13,13 @@ class PandocConverterPlugin(HTMLFormatter):
 
     def __init__(self):
         """ Create a new formatter for the dispatcher to use. """ 
-
+        
         self.actions = [{"exts"   :[".md"],\
                          "method" : self.convert,\
                           "sig"   : "pandocmd",\
                           "name"  : "Pandoc based markdown converter"}]
         self.config = json.load(open("dispatcher-config.json"))
+        self.name  = "Pandoc converter"
         if "preferDataURIs" in self.config:
             self.preferDataURIs = self.config["preferDataURIs"]
         else:
@@ -53,7 +53,6 @@ class PandocConverterPlugin(HTMLFormatter):
     
         logging.info("Ran pandoc on " + actableFile.path)
         
-    def print_name(self):
-        print "Pandoc Converter Plugin"
+  
 
    

@@ -9,7 +9,7 @@ class PandocConverterPlugin(HTMLFormatter):
     """ Pandoc based document converter.
     Initial release handles markdown only.
 
-    """
+    """l
 
     def __init__(self):
         """ Create a new formatter for the dispatcher to use. """ 
@@ -51,7 +51,7 @@ class PandocConverterPlugin(HTMLFormatter):
         subprocess.check_output(["pandoc", "-o",
                            actableFile.indexHTML, actableFile.path])
     
-        logging.info("Ran pandoc on " + actableFile.path)
+        self.logger.info("Ran pandoc on " + actableFile.path)
         
   
 

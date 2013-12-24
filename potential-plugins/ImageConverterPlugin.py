@@ -68,7 +68,7 @@ class ImageConverterPlugin(HTMLFormatter):
         f.write(html)
         f.close()
         actableFile.saveMeta()
-        logging.info("Ran Exfitool on " + actableFile.path)
+        self.logger.info("Ran Exfitool on " + actableFile.path)
         
     def print_name(self):
         print "Image Converter Plugin"

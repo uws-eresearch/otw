@@ -24,11 +24,12 @@ class WatcherDispatcher:
         self.wm = pyinotify.WatchManager()
         self.notifier = pyinotify.ThreadedNotifier(self.wm, EventHandler())
         self.notifier.start()
-        logging.info("Starting watching")
+        logger.info("Starting watching")
         for watch in watchDirs:
             self.wm.add_watch(watch, self.mask, rec=True)
-            logging.info("watch")
-        logging.info("---------")
+            logger.info("watching" + watch)
+            print  "Watching"
+        logger.info("---------")
 
     #def start(self):
      #   watcher(wm)
@@ -53,7 +54,7 @@ class FileActionStore:
     def addActions(self, actionDicts):
         for act in actionDicts:
             for e in act["exts"]:   
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
                 self.addAction(FileAction(e, act["method"], 
                                           act["sig"], act["name"]))
 
@@ -79,7 +80,9 @@ class ActionableFile:
         self.meta = {"dc:title":"Untitled","dc:creator":{"@list": []}}
         #TODO make meta private and add methods to change it
         try:
-            if ACTIONS.extensionHasAction(self.ext):
+            print "Setting up file" + file
+            if (ACTIONS.extensionHasAction(self.ext)):
+                print "action" + file
                 action = ACTIONS.getAction(self.ext)
                 self.path = file
                 self.originalDirname, self.filename = os.path.split(file)
@@ -99,11 +102,11 @@ class ActionableFile:
             self.complain(e)
             
     def complain(self, e):
-        logging.warning("WARNING:" + self.path)
-        logging.warning(sys.exc_info()[0])
-        logging.warning(e.__doc__)
-        logging.warning(e.message)
-        logging.warning("-------------")
+        logger.warning(self.path)
+        logger.warning(sys.exc_info()[0])
+        logger.warning(e.__doc__)
+        logger.warning(e.message)
+        logger.warning("-------------")
             
     def saveMeta(self):
         j = open(self.metaJSON, "w")
@@ -132,7 +135,6 @@ class FileDispatcher:
                 for file in files:
                     actionable = ActionableFile(os.path.join(root,file))
                     if actionable.actionable:
-                        
                         self.fileList.append(actionable)	
        
 
@@ -144,13 +146,12 @@ class FileDispatcher:
 	         if file.actionable: file.act()
 
 
-# Now watch and call processors for each file
-
 #TODO - can I get rid of this global?
 ACTIONS = FileActionStore()
 #TODO fail gracefully with usage
 configFilePath = sys.argv[1]
 CONFIG = json.load(open(configFilePath))
+CONFIG["generatedDirName"] = os.path.join("/", CONFIG["generatedDirName"], "/")
 
 logger = logging.getLogger('dispatcher')
 hdlr = logging.FileHandler(CONFIG["logFile"])
@@ -158,7 +159,7 @@ formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
 logger.setLevel(logging.DEBUG)
-logging.warning("OTW Dispatcher started ")
+logger.warning("OTW Dispatcher started ")
 
 useInotify = CONFIG["useInotify"]
 if useInotify:
@@ -166,7 +167,7 @@ if useInotify:
         import pyinotify
         from eventhandler import EventHandler
     except:
-        logging.warn("Unable to import pyinotify")
+        logger.warn("Unable to import pyinotify")
         useInotify = False
 
 def main(useInotify):   
@@ -183,6 +184,7 @@ def main(useInotify):
     
     # Loop round the loaded plugins and print their names.
     for plugin in manager.getAllPlugins():
+        plugin.plugin_object.logger = logger
         logger.info("Loaded plugin: " + str(plugin.plugin_object.actions))
         ACTIONS.addActions(plugin.plugin_object.actions)
      
@@ -190,6 +192,7 @@ def main(useInotify):
     #Start watching
     if scanRepeatedly and useInotify:
         scanRepeatedly = False #Don't loop below we're already watching events
+        print "Dispatching"
         WatcherDispatcher(CONFIG["watchDirs"])
     
     #Get a list of existing files

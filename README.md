@@ -85,13 +85,20 @@ There will be more options for running this toolkit in future, but for now, run 
  
 ## As a service 
 
-The script ```dispatcher.rc``` can be added to the appropriate run scripts folder on your system.
+The dispatcher init script in ``/opt/otw/dispatcher.rc``` requires ```realpath``
+` to be installed.
 
-```dispatcher.rc``` accepts the normal start/stop/restart/status arguments.
+```
+apt-get install realpath
+```
 
-This script requires ```realpath``` to be installed. You are welcome to rename this script to something the makes sense for your Linux host.
+Now add ```dispatcher.rc``` to your system boot init script.
 
-A PID file is recorded into ```/opt/otw/dispatcher.pid```. If you would prefer this in another place, such as /var/run/, you will need to edit ```dispatcher.rc```
+```
+ln -s /opt/otw/dispatcher.rc /etc/init.d/dispatcher
+update-rc.d dispatcher defaults
+```
 
-
+dispatcher writes it's PID into ```/opt/otw/dispatcher.pid```. If you need this
+in another place, such as /var/run/, you will need to edit ```dispatcher.rc```
 

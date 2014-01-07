@@ -2,7 +2,7 @@
 
 This project aims to bring together an extensible set of tools for creating web-ready views of all kinds of files. The idea is that everything should not only have the opportunity to be ON the web but should also be able to be OF the web - that is, available in HTML, or wrapped in HTML, with as much rich machine readable metadata as possible.
 
-If you are running on Linux then you can use the inotify system to watch for file system changes, if not this just repeatedly scans a set of paths, with no waiting or other niceties.
+If you are running on Linux then you can use the inotify system to watch for file system changes  if not this just repeatedly scans a set of paths, with no waiting or other niceties.
 
 
 It contains:
@@ -23,7 +23,7 @@ Then the system will generate a set of web-ready files alongside it:
 ```
 test.md
 /_html/test.md/index.html
-            /snippet.html #NOT implemented yet
+            /snippet.html #NOT implemented yet, will be used for listing files in summary pages
             /eotx.txt #Not implemented yet will contain info about what 
                        generated this file  
 ```
@@ -43,7 +43,7 @@ These instructions are for Ubuntu and at this stage we are assuming you know you
 
     ```git clone https://github.com/uws-eresearch/otw.git```
 
-* Install the dependencies TODO: Check
+* Install the dependencies (pyinotify is Linux only)
 
     ```sudo easy_install yapsy pyinotify ```
 

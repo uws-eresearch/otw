@@ -17,6 +17,40 @@ import json
 
 from categories import HTMLFormatter
 
+#TODO fail gracefully with usage
+configFilePath = sys.argv[1]
+CONFIG = json.load(open(configFilePath))
+logger = logging.getLogger('dispatcher')
+hdlr = logging.FileHandler(CONFIG["logFile"])
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr) 
+logger.setLevel(logging.DEBUG)
+logger.warning("OTW Dispatcher started ")
+
+
+
+
+useInotify = CONFIG["useInotify"]
+if useInotify:
+    try:
+            import pyinotify
+            class EventHandler(pyinotify.ProcessEvent):
+                def process_IN_CREATE(self, event):
+                    if os.path.isfile(event.pathname):
+                        ActionableFile(event.pathname).act()
+
+                def process_IN_CLOSE(self, event):
+                    if os.path.isfile(event.pathname):
+                        ActionableFile(event.pathname).act()
+                
+                def process_IN_DELETE(self, event):
+                    pass #TODO Deal with removing files
+                        
+        
+    except Exception, e:
+            logger.warn("Unable to import pyinotify")
+            useInotify = False
 
 class WatcherDispatcher:
     def __init__(self, watchDirs):
@@ -73,6 +107,7 @@ class ActionableFile:
     def __init__(self, file):
         _,self.ext = os.path.splitext(file)
         self.ext = self.ext.lower()
+        htmlDirName = os.sep + CONFIG["generatedDirName"] + os.sep
         #todo get rid of globals
         
         #TODO: make this 'proper' JSON-LD by adding @context
@@ -80,9 +115,8 @@ class ActionableFile:
         self.meta = {"dc:title":"Untitled","dc:creator":{"@list": []}}
         #TODO make meta private and add methods to change it
         try:
-            print "Setting up file" + file
-            if (ACTIONS.extensionHasAction(self.ext)):
-                print "action" + file
+           
+            if (not htmlDirName in file and ACTIONS.extensionHasAction(self.ext)):
                 action = ACTIONS.getAction(self.ext)
                 self.path = file
                 self.originalDirname, self.filename = os.path.split(file)
@@ -148,32 +182,12 @@ class FileDispatcher:
 
 #TODO - can I get rid of this global?
 ACTIONS = FileActionStore()
-#TODO fail gracefully with usage
-configFilePath = sys.argv[1]
-CONFIG = json.load(open(configFilePath))
-CONFIG["generatedDirName"] = os.path.join("/", CONFIG["generatedDirName"], "/")
 
-logger = logging.getLogger('dispatcher')
-hdlr = logging.FileHandler(CONFIG["logFile"])
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr) 
-logger.setLevel(logging.DEBUG)
-logger.warning("OTW Dispatcher started ")
 
-useInotify = CONFIG["useInotify"]
-if useInotify:
-    try:
-        import pyinotify
-        from eventhandler import EventHandler
-    except:
-        logger.warn("Unable to import pyinotify")
-        useInotify = False
+    
 
 def main(useInotify):   
     scanRepeatedly = CONFIG["scanRepeatedly"]
-    
-   
     
     # Load the plugins from the plugin directory.
     manager = PluginManager(categories_filter={ "Formatters": HTMLFormatter})
@@ -192,7 +206,6 @@ def main(useInotify):
     #Start watching
     if scanRepeatedly and useInotify:
         scanRepeatedly = False #Don't loop below we're already watching events
-        print "Dispatching"
         WatcherDispatcher(CONFIG["watchDirs"])
     
     #Get a list of existing files

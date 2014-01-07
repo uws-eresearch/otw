@@ -85,8 +85,7 @@ There will be more options for running this toolkit in future, but for now, run 
  
 ## As a service 
 
-The dispatcher init script in ``/opt/otw/dispatcher.rc``` requires ```realpath``
-` to be installed.
+The dispatcher init script in ```/opt/otw/dispatcher.rc``` requires ```realpath``` to be installed.
 
 ```
 apt-get install realpath

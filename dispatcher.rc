@@ -1,6 +1,15 @@
 #!/bin/bash
 # Uses a PID file to add daemon-like behavior to an arbitrary program.
 ################################################################################
+### BEGIN INIT INFO
+# Provides:          dispatcher
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: OTW Dispatcher initialize
+# Description:       OTW Dispatcher
+### END INIT INFO
  
 OTWHOME="/opt/otw"
 PROGSHORT="${OTWHOME}/dispatcher.py"
@@ -86,6 +95,7 @@ esac
  
 exit 0
  
+# dispatcher launch script based on work by Rodney Waldhoff
 ######################################################################
 # This program is free software. It comes without any warranty, to
 # the extent permitted by applicable law.
@@ -100,4 +110,3 @@ exit 0
 # Everyone is permitted to copy and distribute verbatim or modified
 # copies of this program with or without this notice.
 ######################################################################
-

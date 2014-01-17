@@ -73,8 +73,11 @@ Out of the box, the system will look in the ```plugins/``` directory for convers
 A simple way to get started is to copy the whole directory:
 
  * ```cp -r /opt/otw/potential-plugins /opt/otw/plugins```
-    
-There is an office document converter that run on word processing documents in this project: https://code.google.com/p/jischtml5/
+
+Currently ships with two plugins:
+ * *PandocConverterPlugin.py* requires Pandoc, converts markdown files to HTML (without any embedded metadata ATM)
+ * *ImageCOnverterPlugin.py* requires Exiftool, extracts EXIF metadata from images and creates a human and machine readable table, as well as an image preview. Uses data-uris to embed the image preview in index.html so extra images don't pollute people's image libaries, this should make it safe to run on image collections that might be being 'watched' by the likes of Picasa.
+ * *Extra*: There is an office document converter that run on word processing documents in this project: https://code.google.com/p/jischtml5/
 
 Assuming you [install it](https://code.google.com/p/jischtml5/wiki/WordDownCommandlineOpenOffice), add it to your plugins like so:
   * Add this to your array of pluginPaths array ```"/opt/jischtml5/tools/commandline"```

@@ -22,12 +22,16 @@ Then the system will generate a set of web-ready files alongside it:
 
 ```
 test.md
-/_html/test.md/index.html
-            /snippet.html #NOT implemented yet, will be used for listing files in summary pages
+/_html/test.md/index.html 
+     #A preview or rendition of the file with human AND machine readable metadata. 
+     # For document files like Markdown or docx this will be an actual HTML Document
+     # For things like images it will be a table of EXIF metadata and a preview
+            /meta.json-ld #Metadata in JSON-LD format for convenience
             /eotx.txt #Not implemented yet will contain info about what 
                        generated this file  
 ```
 
+We did consider using the bagit spec for this, but these things are designed to be easy for people to use and bagit would introduce one too many levels of directory nesting as all the content has to go in a data directory.
 ## Install
 
 These instructions are for Ubuntu and at this stage we are assuming you know your way around the commandline, where to put bits of code etc. 
@@ -85,13 +89,13 @@ There will be more options for running this toolkit in future, but for now, run 
  
 ## As a service 
 
-The dispatcher init script in ```/opt/otw/dispatcher.rc``` requires ```realpath``` to be installed.
+ * To run the dispatcher init script in ```/opt/otw/dispatcher.rc``` install ```realpath```:
 
 ```
 apt-get install realpath
 ```
 
-Now add ```dispatcher.rc``` to your system boot init script.
+ * Add ```dispatcher.rc``` to your system boot init script.
 
 ```
 ln -s /opt/otw/dispatcher.rc /etc/init.d/dispatcher

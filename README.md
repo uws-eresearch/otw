@@ -76,7 +76,7 @@ A simple way to get started is to copy the whole directory:
 
 Currently ships with two plugins:
  * *PandocConverterPlugin.py* requires Pandoc, converts markdown files to HTML (without any embedded metadata ATM)
- * *ImageConverterPlugin.py* requires Exiftool, extracts EXIF metadata from images and creates a human and machine readable table, as well as an image preview. Uses data-uris to embed the image preview in index.html so extra images don't pollute people's image libaries, this should make it safe to run on image collections that might be being 'watched' by the likes of Picasa.
+ * *ImageConverterPlugin.py* requires Exiftool, extracts EXIF metadata from images and creates a human and machine readable table, as well as an image preview. Uses data-uris to embed the image preview in index.html so extra images don't pollute people's image libaries, this should make it safe to run on image collections that might be being 'watched' by the likes of Picasa. Currently very much an alpha, still trying to work out how to model the RDF etc, has rudimentary, very bad unit tests.
  * *Extra*: There is an office document converter that run on word processing documents in this project: https://code.google.com/p/jischtml5/
    Assuming you [install it](https://code.google.com/p/jischtml5/wiki/WordDownCommandlineOpenOffice), add it to your plugins like so:
    * Add this to your ```dispatcher-config.json``` pluginPaths array ```"/opt/jischtml5/tools/commandline"```

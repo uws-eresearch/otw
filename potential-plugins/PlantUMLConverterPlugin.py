@@ -31,9 +31,9 @@ class PlantUMLConverterPlugin(HTMLFormatter):
         
 
     def convert(self, actableFile):
-        """Simple conversion script that runs markdown thru pandoc.
+        """Simple conversion script that runs PlantUML via HTTP.
         actableFile: ActionalableFile object from dispatcher.py
-        TODO: Fix relative image paths
+      
 
         """
             

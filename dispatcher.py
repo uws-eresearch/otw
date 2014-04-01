@@ -195,13 +195,13 @@ def main(useInotify):
     for dir in CONFIG["pluginDirs"]:
         sys.path.append(dir)
     manager.collectPlugins()
-    
+
     # Loop round the loaded plugins and print their names.
     for plugin in manager.getAllPlugins():
         plugin.plugin_object.logger = logger
         logger.info("Loaded plugin: " + str(plugin.plugin_object.actions))
         ACTIONS.addActions(plugin.plugin_object.actions)
-     
+	plugin.plugin_object.config = CONFIG
           
     #Start watching
     if scanRepeatedly and useInotify:

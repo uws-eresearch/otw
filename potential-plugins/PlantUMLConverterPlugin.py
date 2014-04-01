@@ -9,7 +9,10 @@ class PlantUMLConverterPlugin(HTMLFormatter):
     """ Plantuml based document converter. For demo purposes only!
 	For real life use first install a PlantUML server
 	To install, first install this:
+	https://github.com/dougn/python-plantuml
 	
+	Download as Zip from github, and:
+		sudo python setup.py install
     """
 
     def __init__(self):

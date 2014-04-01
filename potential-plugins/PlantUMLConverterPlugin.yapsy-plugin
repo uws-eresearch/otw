@@ -5,4 +5,4 @@ Module = PlantUMLConverterPlugin
 [Documentation]
 Author = Peter Sefton
 Version = 0.1
-Description = Pandoc based plugin 
+Description = PlantUML based plugin 

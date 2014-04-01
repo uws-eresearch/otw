@@ -7,6 +7,9 @@ import json
 
 class PlantUMLConverterPlugin(HTMLFormatter):
     """ Plantuml based document converter. For demo purposes only!
+	This uses the public plantUML server as per the default in the
+	python-plantuml library.
+
 	For real life use first install a PlantUML server
 	To install, first install this:
 	https://github.com/dougn/python-plantuml
@@ -43,7 +46,7 @@ class PlantUMLConverterPlugin(HTMLFormatter):
 	pu.processes_file(actableFile.path, os.path.join(actableFile.dirname, "index.png"))
         html = "<html><body><img src='./index.png'></body></html>"
 	open(actableFile.indexHTML, 'w').write(html)
-        self.logger.info("Ran pandoc on " + os.path.join(actableFile.dirname, "index.png"))
+        self.logger.info("Ran PlantUML on " + os.path.join(actableFile.dirname, "index.png"))
 
         
   

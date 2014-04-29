@@ -19,14 +19,15 @@ class ImageConverterPlugin(HTMLFormatter):
 
     """
 
-    def __init__(self):
+    def initialize(self,logger,config):
         """ Create a new formatter for the dispatcher to use. """ 
 
         self.actions = [{"exts"   :[".jpg", ".png"],\
                          "method" : self.convert,\
                           "sig"   : "images",\
                           "name"  : "Image converter"}]
-        self.config = json.load(open("dispatcher-config.json"))
+        self.config = config
+	self.logger = logger
         self.previewSize = self.config["previewSize"]
         self.thumbnailSize = self.config["thumbnailSize"]
         self.meta = dict()

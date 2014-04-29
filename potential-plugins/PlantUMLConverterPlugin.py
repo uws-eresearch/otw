@@ -10,7 +10,12 @@ class PlantUMLConverterPlugin(HTMLFormatter):
 	This uses the public plantUML server as per the default in the
 	python-plantuml library.
 
-	For real life use first install a PlantUML server
+	For real life use make sure you install Graphviz:
+	    sudo apt-get install graphviz
+	    
+	and add a value to your dispatcher-config.jsonn for the plantuml path
+	    "plantuml_path" : "/opt/otw/plugins/plantuml.jar"      
+
 	To install, first install this:
 	https://github.com/dougn/python-plantuml
 	
@@ -18,10 +23,11 @@ class PlantUMLConverterPlugin(HTMLFormatter):
 		sudo python setup.py install
     """
 
-    def __init__(self):
+    def initialize(self, logger, config):
         """ Create a new formatter for the dispatcher to use. """ 
-        
-        self.actions = [{"exts"   :[".plantuml"],\
+        self.logger = logger
+        self.config = config
+        self.actions = [{"exts"   :[".plantuml.txt"],\
                          "method" : self.convert,\
                           "sig"   : "plantuml",\
                           "name"  : "Plantuml converter"}]
@@ -30,23 +36,32 @@ class PlantUMLConverterPlugin(HTMLFormatter):
 
         
 
-    def convert(self, actableFile):
-        """Simple conversion script that runs PlantUML via HTTP.
-        actableFile: ActionalableFile object from dispatcher.py
-      
+    def convert(self, actable_file):
+        """Simple conversion script that runs PlantUML.
+        actable_file: ActionalableFile object from dispatcher.py
+
 
         """
             
         try:
-            os.makedirs(actableFile.dirname)
+            os.makedirs(actable_file.dirname)
         except:
             pass
+        html = "<html><body>"
+        if "plantuml_path" in self.config: 
+            #Installed locally
+            logger.info(subprocess.check_output(["java", "-jar", 
+                        self.config["plantuml_path"], "-o",
+                        actable_file.dirname]))
+            #TODO: SVG as well
+        else:
+            #Phone a friend
+            pu = plantuml.PlantUML()
+            pu.processes_file(actable_file.path, os.path.join(actable_file.dirname, "%s.png" % actable_file.filestem))
             
-       	pu = plantuml.PlantUML()
-	pu.processes_file(actableFile.path, os.path.join(actableFile.dirname, "index.png"))
-        html = "<html><body><img src='./index.png'></body></html>"
-	open(actableFile.indexHTML, 'w').write(html)
-        self.logger.info("Ran PlantUML on " + os.path.join(actableFile.dirname, "index.png"))
+        html += "<img src='./%s.png'></body></html>" % actable_file.filestem
+        open(actable_file.indexHTML, 'w').write(html)
+        self.logger.info("Ran PlantUML on " + os.path.join(actable_file.dirname, "index.png"))
 
         
   

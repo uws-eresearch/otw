@@ -1,8 +1,0 @@
-{
-"watchDirs" : ["/path/to/watch"],
-"pluginDirs" : ["./plugins"]
-"scanRepeatedly" : true,
-"useInotify" : false,
-"generatedDirName" : "_html",
-"preferDataURIs" : false
-}

@@ -9,16 +9,16 @@ class PandocConverterPlugin(HTMLFormatter):
     """ Pandoc based document converter.
     Initial release handles markdown only.
 
-    """l
+    """
 
-    def __init__(self):
+    def initialize(self, logger, config):
         """ Create a new formatter for the dispatcher to use. """ 
-        
+        self.logger = logger
+        self.config = config
         self.actions = [{"exts"   :[".md"],\
                          "method" : self.convert,\
                           "sig"   : "pandocmd",\
                           "name"  : "Pandoc based markdown converter"}]
-        self.config = json.load(open("dispatcher-config.json"))
         self.name  = "Pandoc converter"
         if "preferDataURIs" in self.config:
             self.preferDataURIs = self.config["preferDataURIs"]

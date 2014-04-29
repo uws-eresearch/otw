@@ -18,42 +18,10 @@ import json
 from categories import HTMLFormatter
 
 #TODO fail gracefully with usage
-configFilePath = sys.argv[1]
-CONFIG = json.load(open(configFilePath))
-logger = logging.getLogger('dispatcher')
-hdlr = logging.FileHandler(CONFIG["logFile"])
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr) 
-logger.setLevel(logging.DEBUG)
-logger.warning("OTW Dispatcher started ")
 
-
-
-
-useInotify = CONFIG["useInotify"]
-if useInotify:
-    try:
-            import pyinotify
-            class EventHandler(pyinotify.ProcessEvent):
-                def process_IN_CREATE(self, event):
-                    if os.path.isfile(event.pathname):
-                        ActionableFile(event.pathname).act()
-
-                def process_IN_CLOSE(self, event):
-                    if os.path.isfile(event.pathname):
-                        ActionableFile(event.pathname).act()
-                
-                def process_IN_DELETE(self, event):
-                    pass #TODO Deal with removing files
-                        
-        
-    except Exception, e:
-            logger.warn("Unable to import pyinotify")
-            useInotify = False
 
 class WatcherDispatcher:
-    def __init__(self, watchDirs):
+    def __init__(self, watchDirs, logger, pyinotify, EventHandler):
         self.mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE | pyinotify.IN_CLOSE_WRITE  
         self.wm = pyinotify.WatchManager()
         self.notifier = pyinotify.ThreadedNotifier(self.wm, EventHandler())
@@ -87,10 +55,10 @@ class FileActionStore:
 
     def addActions(self, actionDicts):
         for act in actionDicts:
-            for e in act["exts"]:   
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-                self.addAction(FileAction(e, act["method"], 
-                                          act["sig"], act["name"]))
+            for e in act["exts"]:
+		self.addAction(FileAction(e, act["method"],act["sig"], act["name"]))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+                
 
     def extensionHasAction(self, ext):
         return ext in self.actions
@@ -104,28 +72,31 @@ class FileActionStore:
 
 
 class ActionableFile:
-    def __init__(self, file):
-        _,self.ext = os.path.splitext(file)
-        self.ext = self.ext.lower()
-        htmlDirName = os.sep + CONFIG["generatedDirName"] + os.sep
+    def __init__(self, file, logger, config, actions):
+        self.logger = logger
+        self.config = config
+        self.actions = actions
+        self.originalDirname, self.filename = os.path.split(file)
+        self.ext = self.splitexts(self.filename)
+        self.filestem = self.filename.replace(self.ext, "")
+        htmlDirName = os.sep + config["generatedDirName"] + os.sep
         #todo get rid of globals
         
         #TODO: make this 'proper' JSON-LD by adding @context
         #For now jsut use simple metadata which is 'JSON-LD ready'
         self.meta = {"dc:title":"Untitled","dc:creator":{"@list": []}}
         #TODO make meta private and add methods to change it
-        try:
-           
-            if (not htmlDirName in file and ACTIONS.extensionHasAction(self.ext)):
-                action = ACTIONS.getAction(self.ext)
+        try:       
+            if (not htmlDirName in file and self.actions.extensionHasAction(self.ext)):
+                action = self.actions.getAction(self.ext)
                 self.path = file
-                self.originalDirname, self.filename = os.path.split(file)
+                
                 self.method = action.method
                 self.actionable = True
                 self.indexFilename = "index.html"
                 self.metaFilename = "meta.json"
                 self.dirname = os.path.join(self.originalDirname,
-					    CONFIG["generatedDirName"],
+					    self.config["generatedDirName"],
                                             self.filename)
                 
                 self.indexHTML = os.path.join(self.dirname,self.indexFilename)
@@ -134,13 +105,20 @@ class ActionableFile:
                 self.actionable = False
         except Exception, e:
             self.complain(e)
+   
+    def splitexts(self, path):
+        (file, ext) = os.path.splitext(path)
+        if ext == "":
+            return ""
+        else:
+            return self.splitexts(file) + ext.lower()        
             
     def complain(self, e):
-        logger.warning(self.path)
-        logger.warning(sys.exc_info()[0])
-        logger.warning(e.__doc__)
-        logger.warning(e.message)
-        logger.warning("-------------")
+        self.logger.warning(self.path)
+        self.logger.warning(sys.exc_info()[0])
+        self.logger.warning(e.__doc__)
+        self.logger.warning(e.message)
+        self.logger.warning("-------------")
             
     def saveMeta(self):
         j = open(self.metaJSON, "w")
@@ -151,7 +129,6 @@ class ActionableFile:
             if (self.actionable and 
                ((not os.path.exists(self.indexHTML)) or
                  (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path)))):
-                
                     self.method(self)
         except Exception, e:
             self.complain(e)
@@ -162,12 +139,12 @@ class FileDispatcher:
 	We want to get this list ASAP after starting as any subsequent changes
 	should get picked up by the watcher directories"""
 
-    def __init__(self, toWatch):
+    def __init__(self, toWatch, logger, config, actions):
         self.fileList = []
         for watch in toWatch:
             for root, dirs, files in os.walk(watch):
                 for file in files:
-                    actionable = ActionableFile(os.path.join(root,file))
+                    actionable = ActionableFile(os.path.join(root,file),logger, config, actions)
                     if actionable.actionable:
                         self.fileList.append(actionable)	
        
@@ -180,43 +157,78 @@ class FileDispatcher:
 	         if file.actionable: file.act()
 
 
-#TODO - can I get rid of this global?
-ACTIONS = FileActionStore()
 
 
     
 
-def main(useInotify):   
-    scanRepeatedly = CONFIG["scanRepeatedly"]
-    
+def main():
+    #TODO: proper argument handling, usage etc
+
+    #Config   
+    configFilePath = sys.argv[1]
+    config = json.load(open(configFilePath))
+    scanRepeatedly = config["scanRepeatedly"]
+
+    #logging
+    logger = logging.getLogger('dispatcher')
+    hdlr = logging.FileHandler(config["logFile"])
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr) 
+    logger.setLevel(logging.DEBUG)
+    logger.warning("OTW Dispatcher started ")
+
+
+
     # Load the plugins from the plugin directory.
     manager = PluginManager(categories_filter={ "Formatters": HTMLFormatter})
-    manager.setPluginPlaces(CONFIG["pluginDirs"])
-    for dir in CONFIG["pluginDirs"]:
+    manager.setPluginPlaces(config["pluginDirs"])
+    for dir in config["pluginDirs"]:
         sys.path.append(dir)
     manager.collectPlugins()
 
-    # Loop round the loaded plugins and print their names.
+    # Loop round the loaded plugins and set up actions
+    actions = FileActionStore()
     for plugin in manager.getAllPlugins():
-        plugin.plugin_object.logger = logger
+        plugin.plugin_object.initialize(logger, config)
         logger.info("Loaded plugin: " + str(plugin.plugin_object.actions))
-        ACTIONS.addActions(plugin.plugin_object.actions)
-	plugin.plugin_object.config = CONFIG
+        actions.addActions(plugin.plugin_object.actions)
+                                                                                                                                                                                                                                                                                
+    useInotify = config["useInotify"]
+    if useInotify:
+        try:
+            import pyinotify
+            class EventHandler(pyinotify.ProcessEvent):
+                def process_IN_CREATE(self, event):
+                    if os.path.isfile(event.pathname):
+                        ActionableFile(event.pathname, logger, config, actions).act()
+
+                def process_IN_CLOSE(self, event):
+                    if os.path.isfile(event.pathname):
+                        ActionableFile(event.pathname,logger, config, actions).act()
+                
+                def process_IN_DELETE(self, event):
+                    pass #TODO Deal with removing files
+                    
+
+        except Exception, e:
+                logger.warn("Unable to import pyinotify")
+                useInotify = False
           
     #Start watching
     if scanRepeatedly and useInotify:
         scanRepeatedly = False #Don't loop below we're already watching events
-        WatcherDispatcher(CONFIG["watchDirs"])
+        WatcherDispatcher(config["watchDirs"], logger, pyinotify, EventHandler)
     
     #Get a list of existing files
     needToScanFiles = True
     while needToScanFiles:
-        FileDispatcher(CONFIG["watchDirs"]).acts()
+        FileDispatcher(config["watchDirs"], logger, config, actions).acts()
         needToScanFiles = scanRepeatedly
        
   
 
 
 if __name__ == "__main__":
-    main(useInotify)
+    main()
 

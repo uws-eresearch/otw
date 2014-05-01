@@ -27,9 +27,15 @@ class ImageConverterPlugin(HTMLFormatter):
                           "sig"   : "images",\
                           "name"  : "Image converter"}]
         self.config = config
-	self.logger = logger
-        self.previewSize = self.config["previewSize"]
-        self.thumbnailSize = self.config["thumbnailSize"]
+        self.logger = logger
+        if "previewSize" in self.config:
+            self.previewSize = self.config["previewSize"]
+        else:
+            self.previewSize = [800,600]
+        if "thumbnailSize" in self.config:    
+            self.thumbnailSize = self.config["thumbnailSize"]
+        else:
+            self.thumbnailSize = [128,128]
         self.meta = dict()
         self.defaultMetaOrder = ["Keywords",  "File Name",  "Directory",  "File Size",  "File Modification Date/Time",  "File Permissions",  "File Type",  "MIME Type",  "JFIF Version",  "Exif Byte Order",  "Image Description",  "Make",  "Camera Model Name",  "X Resolution",  "Y Resolution",  "Resolution Unit",  "Software",  "Modify Date",  "Artist",  "Y Cb Cr Positioning",  "Copyright",  "Exposure Time",  "F Number",  "Exposure Program",  "ISO",  "Sensitivity Type",  "Exif Version",  "Date/Time Original",  "Create Date",  "Components Configuration",  "Exposure Compensation",  "Max Aperture Value",  "Metering Mode",  "Light Source",  "Flash",  "Focal Length",  "Special Mode",  "Camera ID",  "User Comment",  "Flashpix Version",  "Color Space",  "Exif Image Width",  "Exif Image Height",  "Interoperability Index",  "Interoperability Version",  "Related Image Width",  "Related Image Height",  "File Source",  "Custom Rendered",  "Exposure Mode",  "White Balance",  "Digital Zoom Ratio",  "Scene Capture Type",  "Gain Control",  "Contrast",  "Saturation",  "Sharpness",  "Image Unique ID",  "Lens Info",  "Lens Model",  "PrintIM Version",  "Compression",  "Thumbnail Offset",  "Thumbnail Length",  "XMP Toolkit",  "Creator",  "Subject",  "Current IPTC Digest",  "Envelope Record Version",  "Coded Character Set",  "Application Record Version",  "Image Width",  "Image Height",  "Encoding Process",  "Bits Per Sample",  "Color Components",  "Y Cb Cr Sub Sampling",  "Aperture",  "Image Size",  "Shutter Speed",  "Thumbnail Image",  "Focal Length",  "Light Value"]
         
@@ -60,8 +66,8 @@ class ImageConverterPlugin(HTMLFormatter):
         
         for s,p,o in g:
             label = re.sub(".*/","",p)
-            label = re.sub("([A-Z][a-z])", " \\1", label)
-            self.meta[label[1:]] = (p, o)
+            label = re.sub("(.)([A-Z][a-z])", "\\1 \\2", label)
+            self.meta[label] = (p, o)
             
     def dictToTable(self):
         self.body = "<table>"
@@ -101,6 +107,7 @@ class ImageConverterPlugin(HTMLFormatter):
             f = StringIO.StringIO() #File-like thing
             im.save(f,"PNG") #Need to do this to convert the image
             return "data:image/png;base64,%s" % (f.getvalue().encode("base64"))
+            
         prevURI = makeURI(im)
         im = Image.open(actableFile.path)
         im.thumbnail(self.thumbnailSize)

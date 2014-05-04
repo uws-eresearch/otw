@@ -1,26 +1,52 @@
 from ImageConverterPlugin import ImageConverterPlugin
+import sys
+sys.path.append("..")
+import dispatcher
 import unittest
-
+import logging
+import re
+import os
+import shutil
+import json
 
 class TestImageConverter(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.converter = ImageConverterPlugin()
+        self.config = dispatcher.get_config()
+        self.logger = dispatcher.get_logger(self.config)
+        self.converter.initialize(self.logger, self.config)    
+        self.actions = dispatcher.FileActionStore()
+        self.actions.addActions(self.converter.actions)    
+       
+        
 
-    def test_rdfToDict(self):
-        converter = ImageConverterPlugin()
-        converter.rdfToDict(rdfImage1)
-        (_,subject) = converter.meta["Subject"]
+    def test_rdfToDictbjects(self):
+        self.converter.rdfToDict(rdfImage1)
+        (_,subject) = self.converter.meta["Subject"]
         subjects = subject.split(", ")
         expectedSubjects = ["People/Florence", "Vinyl"]
         self.assertEqual(subjects.sort(),expectedSubjects.sort())
         
     def test_rdfToDict(self):
-        converter = ImageConverterPlugin()
-        converter.rdfToDict(rdfImage1)
-        converter.dictToTable()
-        print converter.body
-             
+        self.converter.rdfToDict(rdfImage1)
+        self.converter.dictToTable()
+        self.assertEqual(self.converter.body.count("<tr>"),86)
+        
+    def test_exiftool(self):
+        """
+        Simple Smoke test to check that everything is actually happening
+        """
+        to_do = dispatcher.ActionableFile("ImageConverterPlugin_tests/image.png", self.logger, self.config, self.actions)
+        try:
+            shutil.rmtree(to_do.dirname)
+        except:
+            pass
+        to_do.act()
+        assert(os.path.exists(to_do.indexHTML))
+        meta = json.load(open(to_do.metaJSON))
+        self.assertEqual(meta["dc:title"], "image.png")
+                 
         
 
 rdfImage1 = """<?xml version='1.0' encoding='UTF-8'?>

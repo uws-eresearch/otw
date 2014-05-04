@@ -104,6 +104,7 @@ class ActionableFile:
             else:
                 self.actionable = False
         except Exception, e:
+            print "problem!!!" + e
             self.complain(e)
    
     def splitexts(self, path):
@@ -156,9 +157,30 @@ class FileDispatcher:
 	        #Check if we still need to run as things might have changed
 	         if file.actionable: file.act()
 
-
-
-
+def get_config(from_file=None):
+    if from_file <> None:
+        config = json.load(open(from_file))
+    else:
+        config = json.loads("""{
+            "watchDirs" : ["."],
+            "pluginDirs" : ["./plugins"],
+            "scanRepeatedly" : false,
+            "useInotify" : false,
+            "generatedDirName" : "_html",
+            "preferDataURIs" : false,
+            "logFile" : "dispatcher.log"
+            }""")
+    return config
+     
+     
+def get_logger(config):
+    logger = logging.getLogger('dispatcher')
+    hdlr = logging.FileHandler(config["logFile"])
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr) 
+    logger.setLevel(logging.DEBUG)
+    return logger
     
 
 def main():
@@ -166,16 +188,12 @@ def main():
 
     #Config   
     configFilePath = sys.argv[1]
-    config = json.load(open(configFilePath))
+    config = get_config(from_file = configFilePath)
+    logger = get_logger(config)
     scanRepeatedly = config["scanRepeatedly"]
 
     #logging
-    logger = logging.getLogger('dispatcher')
-    hdlr = logging.FileHandler(config["logFile"])
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    hdlr.setFormatter(formatter)
-    logger.addHandler(hdlr) 
-    logger.setLevel(logging.DEBUG)
+    logger = get_logger(config)
     logger.warning("OTW Dispatcher started ")
 
 

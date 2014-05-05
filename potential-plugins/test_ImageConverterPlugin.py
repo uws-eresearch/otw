@@ -31,11 +31,11 @@ class TestImageConverter(unittest.TestCase):
     def test_rdfToDict(self):
         self.converter.rdfToDict(rdfImage1)
         self.converter.dictToTable()
-        self.assertEqual(self.converter.body.count("<tr>"),86)
+        self.assertEqual(self.converter.body.count("<tr>"),89)
         
     def test_exiftool(self):
         """
-        Simple Smoke test to check that everything is actually happening
+        Simple Smoke test to check that everything is actually happening with pmg files
         """
         to_do = dispatcher.ActionableFile("ImageConverterPlugin_tests/image.png", self.logger, self.config, self.actions)
         try:
@@ -46,11 +46,27 @@ class TestImageConverter(unittest.TestCase):
         assert(os.path.exists(to_do.indexHTML))
         meta = json.load(open(to_do.metaJSON))
         self.assertEqual(meta["dc:title"], "image.png")
+        
+    def test_exiftool_tiff_animated(self):
+        """
+        Simple Smoke test to check that everything is actually happening with multipage TIFs
+        """
+        to_do = dispatcher.ActionableFile("ImageConverterPlugin_tests/nexus.tif", self.logger, self.config, self.actions)
+        try:
+            shutil.rmtree(to_do.dirname)
+        except:
+            pass
+        print self.converter.actions
+        to_do.act()
+        self.logger.info(str(to_do.actionable))
+        assert(os.path.exists(to_do.indexHTML))
+        meta = json.load(open(to_do.metaJSON))
+        self.assertEqual(meta["dc:title"], "nexus.tif")
                  
     def test_exiftool_unicode(self):
         """
         Deal with unicode
-	"""
+	    """
         to_do = dispatcher.ActionableFile("ImageConverterPlugin_tests/image2.png", self.logger, self.config, self.actions)
         try:
             shutil.rmtree(to_do.dirname)

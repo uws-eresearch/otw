@@ -47,7 +47,19 @@ class TestImageConverter(unittest.TestCase):
         meta = json.load(open(to_do.metaJSON))
         self.assertEqual(meta["dc:title"], "image.png")
                  
-        
+    def test_exiftool_unicode(self):
+        """
+        Deal with unicode
+	"""
+        to_do = dispatcher.ActionableFile("ImageConverterPlugin_tests/image2.png", self.logger, self.config, self.actions)
+        try:
+            shutil.rmtree(to_do.dirname)
+        except:
+            pass
+        to_do.act()
+        assert(os.path.exists(to_do.indexHTML))
+        meta = json.load(open(to_do.metaJSON))
+        self.assertEqual(meta["dc:title"], "image2.png") 
 
 rdfImage1 = """<?xml version='1.0' encoding='UTF-8'?>
 <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>

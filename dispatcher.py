@@ -30,7 +30,6 @@ class WatcherDispatcher:
         for watch in watchDirs:
             self.wm.add_watch(watch, self.mask, rec=True)
             logger.info("watching" + watch)
-            print  "Watching"
         logger.info("---------")
 
     #def start(self):
@@ -104,7 +103,6 @@ class ActionableFile:
             else:
                 self.actionable = False
         except Exception, e:
-            print "problem!!!" + e
             self.complain(e)
    
     def splitexts(self, path):

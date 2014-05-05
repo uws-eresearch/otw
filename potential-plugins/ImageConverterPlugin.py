@@ -8,6 +8,7 @@ import Image
 import StringIO
 import rdflib
 import re
+import codecs
 
 class ImageConverterPlugin(HTMLFormatter):
     """ Image converter - requires Exiftool to be installed
@@ -48,7 +49,7 @@ class ImageConverterPlugin(HTMLFormatter):
         """
         g = rdflib.Graph()
         g.parse(data=rdf)
-        subjectURI = rdflib.term.URIRef(u"http://ns.exiftool.ca/XMP/XMP-dc/1.0/Subject")
+        subjectURI = rdflib.term.URIRef(u"http://ns.cexiftool.ca/XMP/XMP-dc/1.0/Subject")
         keywordsURI = rdflib.term.URIRef(u"http://ns.exiftool.ca/IPTC/IPTC/1.0/Keywords")
         def unpackBag(term):
             for s,o in g.subject_objects(term):
@@ -67,13 +68,13 @@ class ImageConverterPlugin(HTMLFormatter):
         for s,p,o in g:
             label = re.sub(".*/","",p)
             label = re.sub("(.)([A-Z][a-z])", "\\1 \\2", label)
-            self.meta[label] = (p, o)
+            self.meta[label] = (unicode(p), unicode(o))
             
     def dictToTable(self):
-        self.body = "<table>"
+        self.body = u"<table>"
         def formatRow(m):
             (p,o) = self.meta.pop(m)
-            self.body += "<tr><td>%s</td><td property='%s'>%s</td></tr>" % (m,p,o)
+            self.body += u"<tr><td>%s</td><td property='%s'>%s</td></tr>" % (m,p,o)
         for m in self.defaultMetaOrder:
             if m in self.meta:
                 formatRow(m)
@@ -82,7 +83,7 @@ class ImageConverterPlugin(HTMLFormatter):
         for m in self.meta.keys():
             formatRow(m)
             
-        self.body += "</table>"
+        self.body += u"</table>"
         
 
     def convert(self, actableFile):
@@ -106,7 +107,7 @@ class ImageConverterPlugin(HTMLFormatter):
         def makeURI(im):
             f = StringIO.StringIO() #File-like thing
             im.save(f,"PNG") #Need to do this to convert the image
-            return "data:image/png;base64,%s" % (f.getvalue().encode("base64"))
+            return "data:image/png;base64,%s" % (unicode(f.getvalue().encode("base64")))
             
         prevURI = makeURI(im)
         im = Image.open(actableFile.path)
@@ -115,11 +116,10 @@ class ImageConverterPlugin(HTMLFormatter):
         actableFile.meta["dc:title"] = actableFile.filename
         actableFile.meta["thumbnail"] = thumbURI 
         #actableFile.meta["preview"] = prevURI #TOO big consider having a separate JSON file
-        html = "<html><title>%s</title><body><p><a href='../../%s'><img src='%s'></a></p>%s</body></html>" % (actableFile.meta["dc:title"],actableFile.filename, prevURI, self.body)
-        
-        f = open(actableFile.indexHTML,"w")
-        
-        f.write(html)
+        html = u"<html><title>%s</title><body><p><a href='../../%s'><img src='%s'></a></p>%s</body></html>" % (actableFile.meta["dc:title"],actableFile.filename, prevURI, unicode(self.body))
+	
+	f = codecs.open(actableFile.indexHTML, encoding='utf-8', mode="w")
+        f.write(unicode(html))
         f.close()
         actableFile.saveMeta()
         self.logger.info("Ran Exfitool on " + actableFile.path)

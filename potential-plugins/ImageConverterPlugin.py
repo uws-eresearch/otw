@@ -24,9 +24,9 @@ class ImageConverterPlugin(HTMLFormatter):
     def initialize(self,logger,config):
         """ Create a new formatter for the dispatcher to use. """ 
 
-        self.actions = [{"exts"   :[".jpg", ".png", ".jpeg", ".tif", ".tiff"],\
-                         "method" : self.convert,\
-                          "sig"   : "images",\
+        self.actions = [{"exts"   :[".jpg", ".png", ".jpeg", ".gif", ".tif", ".tiff"],
+                         "method" : self.convert,
+                          "sig"   : "images",
                           "name"  : "Image converter"}]
         self.config = config
         self.logger = logger
@@ -109,19 +109,27 @@ class ImageConverterPlugin(HTMLFormatter):
         
         if actableFile.ext.startswith(".tif"):
             print "DOING TIF"
-            gif_path = actableFile.dirname + "preview.gif"
-            command = ["convert",actableFile.path, gif_path]
-            self.logger.info(subprocess.check_output(command))
+            gif_path = os.path.join( actableFile.dirname, "preview.gif")
+            command = ["convert","-resize", "10%", "-delay", "80", actableFile.path, gif_path]
+	    self.logger.info(subprocess.check_output(command))
             f = open(gif_path)
             prevURI = "data:image/gif;base64,%s" % (f.read().encode("base64"))
         else:
-            im = Image.open(actableFile.path)
-            im.thumbnail(self.previewSize)    
-            prevURI = makeURI(im)
-        im = Image.open(actableFile.path)
-        im.thumbnail(self.thumbnailSize)
-        thumbURI = makeURI(im)
-        actableFile.meta["dc:title"] = actableFile.filename
+	    try:
+            	im = Image.open(actableFile.path)
+            	im.thumbnail(self.previewSize)    
+            	prevURI = makeURI(im)
+	    except Exception, e:
+		prevURI = "" #TODO make error image
+		self.logger.info(e)
+	try:
+        	im = Image.open(actableFile.path)
+        	im.thumbnail(self.thumbnailSize)
+        	thumbURI = makeURI(im)
+        except:
+		thumbURI = ""
+		self.logger.info(e)
+	actableFile.meta["dc:title"] = actableFile.filename
         actableFile.meta["thumbnail"] = thumbURI 
         #actableFile.meta["preview"] = prevURI #TOO big consider having a separate JSON file
         html = "<html><title>%s</title><body><p><a href='../../%s'><img src='%s'></a></p>%s</body></html>" % (actableFile.meta["dc:title"],actableFile.filename, prevURI, self.body)

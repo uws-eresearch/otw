@@ -124,13 +124,13 @@ class ActionableFile:
         json.dump(self.meta,j)
             
     def act(self):
-        #try:
+        try:
             if (self.actionable and 
                ((not os.path.exists(self.indexHTML)) or
                  (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path)))):
                     self.method(self)
-        #except Exception, e:
-            #self.complain(e)
+        except Exception, e:
+            self.complain(e)
         
 
 class FileDispatcher:

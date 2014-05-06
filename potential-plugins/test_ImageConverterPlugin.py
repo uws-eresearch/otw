@@ -31,7 +31,7 @@ class TestImageConverter(unittest.TestCase):
     def test_rdfToDict(self):
         self.converter.rdfToDict(rdfImage1)
         self.converter.dictToTable()
-        self.assertEqual(self.converter.body.count("<tr>"),89)
+        self.assertEqual(self.converter.body.count("<tr>"),86)
         
     def test_exiftool(self):
         """

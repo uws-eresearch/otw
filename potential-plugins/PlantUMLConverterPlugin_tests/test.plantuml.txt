@@ -1,0 +1,10 @@
+@startuml
+title The title of this diagram is title
+[onesssss]
+[two]
+[three]
+[four]
+[five]
+[one] -right-> [two] : HELLO!
+[five] ----right----> [one] : What????
+@enduml

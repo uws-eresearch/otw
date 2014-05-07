@@ -79,7 +79,6 @@ class ActionableFile:
         self.ext = self.splitexts(self.filename)
         self.filestem = self.filename.replace(self.ext, "")
         htmlDirName = os.sep + config["generatedDirName"] + os.sep
-        #todo get rid of globals
         
         #TODO: make this 'proper' JSON-LD by adding @context
         #For now jsut use simple metadata which is 'JSON-LD ready'
@@ -155,9 +154,9 @@ class FileDispatcher:
 	        #Check if we still need to run as things might have changed
 	         if file.actionable: file.act()
 
-def get_config(from_file=None):
-    if from_file <> None:
-        config = json.load(open(from_file))
+def get_config(from_filename=None):
+    if from_filename <> None:
+        config = json.load(open(from_filename))
     else:
         config = json.loads("""{
             "watchDirs" : ["."],
@@ -186,13 +185,13 @@ def main():
 
     #Config   
     configFilePath = sys.argv[1]
-    config = get_config(from_file = configFilePath)
+    config = get_config(from_file_name = configFilePath)
     logger = get_logger(config)
     scanRepeatedly = config["scanRepeatedly"]
 
     #logging
     logger = get_logger(config)
-    logger.warning("OTW Dispatcher started ")
+    logger.warning("OTW Dispatcher started")
 
 
 

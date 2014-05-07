@@ -50,19 +50,23 @@ class PlantUMLConverterPlugin(HTMLFormatter):
         except:
             pass
         html = "<html><body>"
-       
-        command = ["java", "-jar", 
-                    self.config["plantuml_path"], "-o",
-                    os.path.abspath(actable_file.dirname), actable_file.path]           
-        self.logger.warning(subprocess.check_output(command))
-            
-        html += "<img src='./%s.plantuml.png'></body></html>" % actable_file.filestem
-        open(actable_file.indexHTML, 'w').write(html)
         source = open(actable_file.path).read()
         r = re.compile("^title (.*)$",re.M)
         titleMatch = r.search(source)
         if  titleMatch != None:
             actable_file.meta["dc:title"] = titleMatch.group(1)
+       
+        command = ["java", "-jar", 
+                    self.config["plantuml_path"], "-o",
+                     os.path.abspath(actable_file.dirname),  actable_file.path] 
+        try:         
+            self.logger.info(subprocess.check_output(command))
+        except:
+            actable_file.meta["dc:title"] = "***ERROR in Plantuml source: %s ***" %  actable_file.meta["dc:title"]
+           
+        html += "<img src='./%s.plantuml.png'></body></html>" % actable_file.filestem
+        open(actable_file.indexHTML, 'w').write(html)
+        
         actable_file.saveMeta()
         self.logger.warning("Ran PlantUML on " + actable_file.filename)
 

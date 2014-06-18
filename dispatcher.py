@@ -185,7 +185,7 @@ def main():
 
     #Config   
     configFilePath = sys.argv[1]
-    config = get_config(from_file_name = configFilePath)
+    config = get_config(from_filename = configFilePath)
     logger = get_logger(config)
     scanRepeatedly = config["scanRepeatedly"]
 

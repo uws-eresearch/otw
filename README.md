@@ -74,9 +74,10 @@ A simple way to get started is to copy the whole directory:
 
  * ```cp -r /opt/otw/potential-plugins /opt/otw/plugins```
 
-Currently ships with two plugins:
+Currently ships with these plugins:
  * *PandocConverterPlugin.py* requires Pandoc, converts markdown files to HTML (without any embedded metadata ATM)
  * *ImageConverterPlugin.py* requires Exiftool, extracts EXIF metadata from images and creates a human and machine readable table, as well as an image preview. Uses data-uris to embed the image preview in index.html so extra images don't pollute people's image libaries, this should make it safe to run on image collections that might be being 'watched' by the likes of Picasa. Currently very much an alpha, still trying to work out how to model the RDF etc, has rudimentary, very bad unit tests.
+ * *ABFConverterPlugin* requires Neo and Dominate, presents a breakdown of the contents of ABF files in HTML form.
  * *Extra*: There is an office document converter that run on word processing documents in this project: https://code.google.com/p/jischtml5/
    Assuming you [install it](https://code.google.com/p/jischtml5/wiki/WordDownCommandlineOpenOffice), add it to your plugins like so:
    * Add this to your ```dispatcher-config.json``` pluginPaths array ```"/opt/jischtml5/tools/commandline"```
@@ -104,6 +105,6 @@ ln -s /opt/otw/dispatcher.rc /etc/init.d/dispatcher
 update-rc.d dispatcher defaults
 ```
 
-dispatcher writes it's PID into ```/opt/otw/dispatcher.pid```. If you need this
+dispatcher writes its PID into ```/opt/otw/dispatcher.pid```. If you need this
 in another place, such as /var/run/, you will need to edit ```dispatcher.rc```
 

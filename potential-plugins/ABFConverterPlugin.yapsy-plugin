@@ -1,0 +1,8 @@
+[Core]
+Name = ABF Converter Plugin
+Module = ABFConverterPlugin
+
+[Documentation]
+Author = David Clarke
+Version = 0.1
+Description = ABF based plugin 

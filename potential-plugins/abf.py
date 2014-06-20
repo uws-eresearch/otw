@@ -29,7 +29,7 @@ class ABFPreviewer:
          st = os.stat(filename)
       except:
          d = document(title = filename)
-         d += h1(filename)
+         d += h1(os.path.basename(filename))
          divvy = d.body.add(div(class_name = 'error'))
          with divvy:
             p("cannot open file {}".format(filename))

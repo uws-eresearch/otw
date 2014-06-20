@@ -24,11 +24,37 @@ class ABFPreviewer:
    
 
    @staticmethod
+   # This is the code to add a reference to an external stylesheet to use when the
+   # time comes that we've worked out what we're doing about that.
+   def add_external_stylesheet(doc):
+      with doc.head:
+         link(rel='stylesheet', href='abf.css', type='text/css')
+
+
+   @staticmethod
+   # Temporary friog of using and in-line stylesheet, to be replaced in due course
+   # by an external stylesheet
+   def add_stylesheet(doc):
+      stylesheet = ''
+      stylesheet += 'table { border-collapse: collapse; }'
+      stylesheet += ' table, th, td { border: 1px solid black; }'
+      stylesheet += ' th, td { padding: 5px; }'
+      stylesheet += ' th { background-color: #cccccc; }'
+      stylesheet += ' dt { float: left; clear: left; width: 150px; text-align: right; font-weight: bold; }'
+      stylesheet += ' dt:after { content: ":"; }'
+      stylesheet += ' dd { margin: 0 0 0 110px; padding: 0 0 0.5em 3.0em; }'
+      stylesheet += ' dd.none { font-style: italic; }'
+      with doc.head:
+         style(stylesheet)
+
+
+   @staticmethod
    def create_HTML_document(filename):
       try:
          st = os.stat(filename)
       except:
          d = document(title = filename)
+         ABFPreviewer.add_stylesheet(d)
          d += h1(os.path.basename(filename))
          divvy = d.body.add(div(class_name = 'error'))
          with divvy:
@@ -39,19 +65,21 @@ class ABFPreviewer:
       bl = r.read_block(lazy=False, cascade=True)
       if bl.name == None:
          d = document(title = filename)
-         d += h1(filename)
+         d += h1(os.path.basename(filename))
       else:
          d = document(title = bl.name)
          d += h1(bl.name)
+
+      ABFPreviewer.add_stylesheet(d)
 
       with d:
          # File statistics
          h2("File Information")
          l = dl()
          with l:
-            dt("Created:")
+            dt("Created")
             dd(time.asctime(time.localtime(st[ST_MTIME])))
-            dt("Size:")
+            dt("Size")
             dd("{} bytes".format(st[ST_SIZE]))
   
 
@@ -59,40 +87,40 @@ class ABFPreviewer:
          h2("Block Header")
          l = dl()
          with l:
-            dt("Name:")
+            dt("Name")
             if bl.name == None:
-               desc = dd()
-               desc.add(i("none"))
+               desc = dd(class_name="none")
+               desc.add("none")
             else:
                dd(bl.name)
-            dt("Description:")
+            dt("Description")
             if bl.description == None:
-               desc = dd()
-               desc.add(i("none"))
+               desc = dd(class_name="none")
+               desc.add("none")
             else:
                dd(bl.description)
-            dt("File:")
+            dt("File")
             if bl.file_origin == None:
-               desc = dd()
-               desc.add(i("none"))
+               desc = dd(class_name="none")
+               desc.add("none")
             else:
                dd(bl.file_origin)
-            dt("Creation Date:")
+            dt("Creation Date")
             if bl.file_datetime == None:
-               desc = dd()
-               desc.add(i("none"))
+               desc = dd(class_name="none")
+               desc.add("none")
             else:
                dd(ABFPreviewer.f(bl.file_datetime))
-            dt("Recording Date:")
+            dt("Recording Date")
             if bl.rec_datetime == None:
-               desc = dd()
-               desc.add(i("none"))
+               desc = dd(class_name="none")
+               desc.add("none")
             else:
                dd(ABFPreviewer.f(bl.rec_datetime))
-            dt("Index:")
+            dt("Index")
             if bl.index == None:
-               desc = dd()
-               desc.add(i("none"))
+               desc = dd(class_name="none")
+               desc.add("none")
             else:
                dd(bl.index)
 
@@ -108,7 +136,7 @@ class ABFPreviewer:
 
          # Create the table summarising this segment's signals
          sigNum = 0
-         t = d.body.add(table(border = 1))
+         t = d.body.add(table())
          with t:
             header = thead()
             with header:

@@ -127,6 +127,12 @@ class ActionableFile:
             if (self.actionable and 
                ((not os.path.exists(self.indexHTML)) or
                  (os.path.getmtime(self.indexHTML) < os.path.getmtime(self.path)))):
+                    try:
+                        os.makedirs(self.dirname)
+                    except:
+                        pass
+                    html = "<p>There was an error creating this file, please contact you administrator</p>"
+                    open(self.indexHTML, 'w').write(html)
                     self.method(self)
         except Exception, e:
             self.complain(e)
